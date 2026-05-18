@@ -204,36 +204,42 @@
 
         function sendMessage() {
 
-            const input =
-                document.getElementById(
-                    "messageInput"
-                )
+    if (ws.readyState !== 1) {
 
-            const text =
-                name + ": " + input.value
+        alert("サーバー接続中です")
+        return
+    }
 
-            const myMessage =
-                document.createElement("div")
+    const input =
+        document.getElementById(
+            "messageInput"
+        )
 
-            myMessage.className =
-                "message me"
+    const text =
+        name + ": " + input.value
 
-            myMessage.textContent =
-                text
+    const myMessage =
+        document.createElement("div")
 
-            chat.appendChild(myMessage)
+    myMessage.className =
+        "message me"
 
-            ws.send(
-                JSON.stringify({
-                    text: text
-                })
-            )
+    myMessage.textContent =
+        text
 
-            input.value = ""
+    chat.appendChild(myMessage)
 
-            chat.scrollTop =
-                chat.scrollHeight
-        }
+    ws.send(
+        JSON.stringify({
+            text: text
+        })
+    )
+
+    input.value = ""
+
+    chat.scrollTop =
+        chat.scrollHeight
+}
 
         function toggleTranslate() {
 
