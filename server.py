@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 
 import uvicorn
@@ -34,15 +34,29 @@ async def websocket_endpoint(websocket: WebSocket):
 
             print("受信:", text)
 
+            disconnected = []
+
             for client in clients:
 
                 if client != websocket:
 
-                    await client.send_text(text)
+                    try:
 
-    except:
+                        await client.send_text(text)
 
-        clients.remove(websocket)
+                    except:
+
+                        disconnected.append(client)
+
+            for d in disconnected:
+
+                clients.remove(d)
+
+    except WebSocketDisconnect:
+
+        if websocket in clients:
+
+            clients.remove(websocket)
 
         print("切断")
 
