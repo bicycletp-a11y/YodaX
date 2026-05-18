@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>YodaX</title>
+
+    <style>
+
+        body {
+
+            font-family: sans-serif;
+
+            background: #e5ddd5;
+
+            margin: 0;
+
+            padding: 0;
+        }
+
+        #chat {
+
+            height: 90vh;
+
+            overflow-y: auto;
+
+            padding: 20px;
+        }
+
+        .message {
+
+            max-width: 60%;
+
+            padding: 10px;
+
+            margin: 10px;
+
+            border-radius: 10px;
+
+            font-size: 18px;
+        }
+
+        .other {
+
+            background: white;
+
+            margin-right: auto;
+        }
+
+        .me {
+
+            background: #95ec69;
+
+            margin-left: auto;
+
+            text-align: right;
+        }
+
+        #inputArea {
+
+            position: fixed;
+
+            bottom: 0;
+
+            width: 100%;
+
+            display: flex;
+
+            background: white;
+
+            padding: 10px;
+        }
+
+        input {
+
+            flex: 1;
+
+            padding: 10px;
+
+            font-size: 18px;
+        }
+
+        button {
+
+            padding: 10px 20px;
+
+            font-size: 18px;
+
+            margin-left: 10px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div id="chat"></div>
+
+    <div id="inputArea">
+
+    <select id="languageSelect">
+
+        <option value="ja">
+            日本語
+        </option>
+
+        <option value="cs">
+            チェコ語
+        </option>
+
+    </select>
+
+    <input
+        type="text"
+        id="messageInput"
+        placeholder="メッセージ"
+    >
+
+    <button
+        onclick="toggleTranslate()"
+        id="translateButton"
+    >
+        翻訳ON
+    </button>
+
+    <button onclick="sendMessage()">
+        送信
+    </button>
+
+</div>
+
+    <script>
+
+        const name =
+            prompt("名前を入力してください")
+
+        const ws =
+            new WebSocket(
+                "ws://192.168.11.14:8000/ws"
+            )
+
+        const chat =
+            document.getElementById("chat")
+
+        let translateMode = true
+
+        ws.onmessage = async function(event) {
+
+    let receivedText =
+        event.data
+
+    if (translateMode) {
+
+        const targetLanguage =
+            document.getElementById(
+                "languageSelect"
+            ).value
+
+        try {
+
+            const response =
+                await fetch(
+
+                    "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl="
+
+                    + targetLanguage +
+
+                    "&dt=t&q=" +
+
+                    encodeURIComponent(
+                        receivedText
+                    )
+                )
+
+            const data =
+                await response.json()
+
+            receivedText =
+                data[0][0][0]
+
+        } catch(error) {
+
+            console.log(error)
+        }
+    }
+
+    const message =
+        document.createElement("div")
+
+    message.className =
+        "message other"
+
+    message.textContent =
+        receivedText
+
+    chat.appendChild(message)
+
+    chat.scrollTop =
+        chat.scrollHeight
+}
+
+        function sendMessage() {
+
+            const input =
+                document.getElementById(
+                    "messageInput"
+                )
+
+            const text =
+                name + ": " + input.value
+
+            const myMessage =
+                document.createElement("div")
+
+            myMessage.className =
+                "message me"
+
+            myMessage.textContent =
+                text
+
+            chat.appendChild(myMessage)
+
+            ws.send(
+                JSON.stringify({
+                    text: text
+                })
+            )
+
+            input.value = ""
+
+            chat.scrollTop =
+                chat.scrollHeight
+        }
+
+        function toggleTranslate() {
+
+            translateMode = !translateMode
+
+            const button =
+                document.getElementById(
+                    "translateButton"
+                )
+
+            if (translateMode) {
+
+                button.textContent =
+                    "翻訳ON"
+
+            } else {
+
+                button.textContent =
+                    "翻訳OFF"
+            }
+        }
+
+    </script>
+
+</body>
+
+</html>
