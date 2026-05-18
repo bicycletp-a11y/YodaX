@@ -137,10 +137,18 @@
         const name =
             prompt("名前を入力してください")
 
-        const ws =
-            new WebSocket(
-                "wss://yodax-is3w.onrender.com/ws"
-            )
+       const protocol =
+    location.protocol === "https:"
+        ? "wss"
+        : "ws"
+
+const ws =
+    new WebSocket(
+        protocol +
+        "://" +
+        location.host +
+        "/ws"
+    )
 
         const chat =
             document.getElementById("chat")
